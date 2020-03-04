@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import asyncio
 import logging
+import websockets
 
 from settings import HOST, LOG_LEVEL, PORT
 
@@ -12,13 +13,13 @@ logging.basicConfig(level=LOG_LEVEL, format='%(asctime)s - %(levelname)s - %(mes
 
 
 async def run():
-    reader, writer = await asyncio.open_connection(HOST, PORT)
-    await send_credentials(writer)
+    async with websockets.connect(f'{HOST}:{PORT}') as websocket:
+        await send_credentials(websocket)
 
-    await asyncio.gather(
-        read_info(writer, reader),
-        idle(writer),
-    )
+        await asyncio.gather(
+            read_info(websocket),
+            idle(websocket),
+        )
 
 
 if __name__ == '__main__':

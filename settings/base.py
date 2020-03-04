@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-HOST = 'irc.twitch.tv'
-PORT = 6667
+HOST = 'ws://irc-ws.chat.twitch.tv'
+PORT = 80
 NICK = 'zazaza691'
 NEW_API_URL = 'https://api.twitch.tv/helix/'
 OAUTH = 'token'

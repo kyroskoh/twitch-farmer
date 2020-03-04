@@ -9,46 +9,41 @@ LOG = logging.getLogger(__name__)
 connected_to = {}
 
 
-async def send_credentials(writer):
-    writer.write(bytes('PASS {}\r\n'.format(OAUTH), 'UTF-8'))
-    writer.write(bytes('NICK {}\r\n'.format(NICK), 'UTF-8'))
-    await writer.drain()
+async def send_credentials(websocket):
+    await websocket.send('PASS {}\r\n'.format(OAUTH))
+    await websocket.send('NICK {}\r\n'.format(NICK))
 
 
-async def send_pong(writer):
-    writer.write(bytes('PONG :tmi.twitch.tv\r\n', 'UTF-8'))
-    await writer.drain()
+async def send_pong(websocket):
+    await websocket.send('PONG :tmi.twitch.tv\r\n')
     LOG.info('Sent PONG')
 
 
-async def join_channels(writer, channels):
+async def join_channels(websocket, channels):
     for channel in channels:
         # sleep to make sure we won't exceed 50/15 limit
         await asyncio.sleep(0.4)
-        writer.write(bytes('JOIN #{}\r\n'.format(channel[1]), 'UTF-8'))
-        await writer.drain()
+        await websocket.send('JOIN #{}\r\n'.format(channel[1]))
         connected_to[channel[0]] = channel[1]
         LOG.info(f'Joined {channel[1]}')
 
 
-async def part_channels(writer, channels):
+async def part_channels(websocket, channels):
     for channel in channels:
         # sleep to make sure we won't exceed 50/15 limit
         await asyncio.sleep(0.4)
-        writer.write(bytes('PART #{}\r\n'.format(channel[1]), 'UTF-8'))
-        await writer.drain()
+        await websocket.send('PART #{}\r\n'.format(channel[1]))
         del connected_to[channel[0]]
         LOG.info(f'Parted {channel[1]}')
 
 
-async def read_info(writer, reader):
+async def read_info(websocket):
     prev_data = ''
     while True:
         try:
-            data = await reader.read(16*1024)
-            data = data.decode('UTF-8')
+            data = await websocket.recv()
             if 'PING :tmi.twitch.tv' in prev_data + data:
-                await send_pong(writer)
+                await send_pong(websocket)
             messages = re.split(r'[~\r\n]+', prev_data + data)
             # for msg in messages:
             #     print(msg)
