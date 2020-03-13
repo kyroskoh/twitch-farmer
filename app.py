@@ -16,10 +16,13 @@ async def run():
     async with websockets.connect(f'{HOST}:{PORT}') as websocket:
         await send_credentials(websocket)
 
-        await asyncio.gather(
-            read_info(websocket),
-            idle(websocket),
-        )
+        try:
+            await asyncio.gather(
+                read_info(websocket),
+                idle(websocket),
+            )
+        except websockets.ConnectionClosed:
+            websocket = websockets.connect(f'{HOST}:{PORT}')
 
 
 if __name__ == '__main__':
