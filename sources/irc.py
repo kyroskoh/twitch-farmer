@@ -50,4 +50,4 @@ async def read_info(websocket):
             prev_data = messages[-1]
         except Exception as exc:
             LOG.exception(exc)
-            raise
+            raise exc

@@ -13,16 +13,17 @@ logging.basicConfig(level=LOG_LEVEL, format='%(asctime)s - %(levelname)s - %(mes
 
 
 async def run():
-    async with websockets.connect(f'{HOST}:{PORT}') as websocket:
-        await send_credentials(websocket)
+    while True:
+        async with websockets.connect(f'{HOST}:{PORT}') as websocket:
+            await send_credentials(websocket)
 
-        try:
-            await asyncio.gather(
-                read_info(websocket),
-                idle(websocket),
-            )
-        except websockets.ConnectionClosed:
-            websocket = websockets.connect(f'{HOST}:{PORT}')
+            try:
+                await asyncio.gather(
+                    read_info(websocket),
+                    idle(websocket),
+                )
+            except websockets.ConnectionClosedError:
+                continue
 
 
 if __name__ == '__main__':
